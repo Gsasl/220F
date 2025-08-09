@@ -1,0 +1,39 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        // Fast input
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st;
+
+        // Number of vertices
+        int N = Integer.parseInt(br.readLine().trim());
+
+        // Initialize adjacency matrix to all zeros
+        int[][] mat = new int[N][N];
+
+        // Read adjacency‐list and fill matrix
+        for (int i = 0; i < N; i++) {
+            st = new StringTokenizer(br.readLine());
+            int k = Integer.parseInt(st.nextToken());  // number of neighbors
+            for (int j = 0; j < k; j++) {
+                int v = Integer.parseInt(st.nextToken());
+                mat[i][v] = 1;
+            }
+        }
+        br.close();
+
+        // Build output via StringBuilder for speed
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                sb.append(mat[i][j]).append(' ');
+            }
+            sb.append('\n');
+        }
+
+        // Print the adjacency matrix
+        System.out.print(sb.toString());
+    }
+}
