@@ -1,0 +1,43 @@
+//fast power drift 107
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // 1. Read a and b from stdin
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        long a = Long.parseLong(st.nextToken());
+        long b = Long.parseLong(st.nextToken());
+
+        // 2. Prepare constants
+        final int MOD = 107;
+        a %= MOD;              // reduce base mod 107
+
+        // 3. If a ≡ 0 mod 107, any power is 0
+        if (a == 0) {
+            System.out.println(0);
+            return;
+        }
+
+        // 4. Use Fermat: reduce exponent mod (MOD−1) = 106
+        long exp = b % (MOD - 1);
+        if (exp == 0) {
+            // b is a multiple of 106 ⇒ a^b ≡ a^106 ≡ 1 (mod 107)
+            exp = MOD - 1;
+        }
+
+        // 5. Fast exponentiation (binary power)
+        long result = 1;
+        while (exp > 0) {
+            if ((exp & 1) == 1) {
+                result = (result * a) % MOD;
+            }
+            a = (a * a) % MOD;
+            exp >>= 1;
+        }
+
+        System.out.println(result);
+    }
+}
