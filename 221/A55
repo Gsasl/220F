@@ -1,0 +1,50 @@
+import java.io.*;
+import java.util.*;
+
+public class SubtreeSize {
+    static int N, R, edgeCnt;
+    static int[] head, to, next, subSize;
+
+    public static void main(String[] args) throws IOException {
+        FastReader fr = new FastReader();
+        N = fr.nextInt(); R = fr.nextInt();
+        head = new int[N + 1];
+        Arrays.fill(head, -1);
+        to = new int[2 * (N - 1)];
+        next = new int[2 * (N - 1)];
+        edgeCnt = 0;
+        for (int i = 0; i < N - 1; i++) {
+            int u = fr.nextInt(), v = fr.nextInt();
+            add(u, v); add(v, u);
+        }
+        subSize = new int[N + 1];
+        computeSizes();
+
+        int Q = fr.nextInt();
+        StringBuilder sb = new StringBuilder();
+        while (Q-- > 0) sb.append(subSize[fr.nextInt()]).append('\n');
+        System.out.print(sb);
+    }
+    static void add(int u, int v) {
+        to[edgeCnt] = v; next[edgeCnt] = head[u]; head[u] = edgeCnt++;
+    }
+    static void computeSizes() {
+        int[] parent = new int[N + 1], stack = new int[N];
+        int[] order = new int[N]; int sp = 0, sz = 0;
+        stack[sp++] = R; parent[R] = -1;
+        while (sp > 0) {
+            int u = stack[--sp]; order[sz++] = u;
+            for (int e = head[u]; e != -1; e = next[e]) {
+                int v = to[e];
+                if (v != parent[u]) { parent[v] = u; stack[sp++] = v; }
+            }
+        }
+        for (int i = sz - 1; i >= 0; i--) {
+            int u = order[i]; subSize[u] = 1;
+            for (int e = head[u]; e != -1; e = next[e]) {
+                int v = to[e]; if (v != parent[u]) subSize[u] += subSize[v];
+            }
+        }
+    }
+    static class FastReader { /* same fast reader as before */ }
+}
