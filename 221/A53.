@@ -1,0 +1,118 @@
+import java.io.*;
+import java.util.*;
+
+public class McQueen {
+    public static void main(String[] args) throws IOException {
+        FastReader fr = new FastReader();
+        int N = fr.nextInt();
+        int M = fr.nextInt();
+        int S = fr.nextInt();
+        int D = fr.nextInt();
+
+        int[] U = new int[M];
+        int[] V = new int[M];
+        for (int i = 0; i < M; i++) U[i] = fr.nextInt();
+        for (int i = 0; i < M; i++) V[i] = fr.nextInt();
+
+        if (S == D) {
+            System.out.println(0);
+            System.out.println(S);
+            return;
+        }
+        if (M == 0) { // no edges, different nodes
+            System.out.println(-1);
+            return;
+        }
+
+        // Degree count
+        int[] deg = new int[N + 1];
+        for (int i = 0; i < M; i++) {
+            deg[U[i]]++;
+            deg[V[i]]++;
+        }
+
+        // Build CSR
+        int[] start = new int[N + 2];
+        for (int u = 1; u <= N; u++) start[u + 1] = start[u] + deg[u];
+
+        int[] to = new int[2 * M];
+        int[] ptr = Arrays.copyOf(start, N + 2);
+        for (int i = 0; i < M; i++) {
+            to[ptr[U[i]]++] = V[i];
+            to[ptr[V[i]]++] = U[i];
+        }
+
+        // Sort adjacency slices
+        for (int u = 1; u <= N; u++) {
+            Arrays.sort(to, start[u], start[u + 1]);
+        }
+
+        // BFS
+        int[] parent = new int[N + 1];
+        Arrays.fill(parent, -1);
+        int[] dist = new int[N + 1];
+        Arrays.fill(dist, -1);
+
+        int[] q = new int[N];
+        int qs = 0, qe = 0;
+        q[qe++] = S;
+        dist[S] = 0;
+
+        while (qs < qe) {
+            int u = q[qs++];
+            if (u == D) break;
+            for (int i = start[u]; i < start[u + 1]; i++) {
+                int v = to[i];
+                if (dist[v] == -1) {
+                    dist[v] = dist[u] + 1;
+                    parent[v] = u;
+                    q[qe++] = v;
+                }
+            }
+        }
+
+        if (dist[D] == -1) {
+            System.out.println(-1);
+            return;
+        }
+
+        // Reconstruct path
+        int len = dist[D];
+        int[] path = new int[len + 1];
+        int idx = len;
+        for (int v = D; v != -1; v = parent[v]) {
+            path[idx--] = v;
+        }
+
+        System.out.println(len);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i <= len; i++) sb.append(path[i]).append(' ');
+        System.out.println(sb.toString().trim());
+    }
+
+    // Fast input reader
+    static class FastReader {
+        private final DataInputStream in = new DataInputStream(System.in);
+        private final byte[] buf = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (len == -1) return -1;
+            if (ptr >= len) {
+                ptr = 0;
+                len = in.read(buf);
+                if (len == -1) return -1;
+            }
+            return buf[ptr++] & 0xFF;
+        }
+
+        int nextInt() throws IOException {
+            int c, x = 0;
+            do { c = read(); } while (c <= ' ' && c != -1);
+            boolean neg = (c == '-');
+            if (neg) c = read();
+            for (; c >= '0' && c <= '9'; c = read()) x = x * 10 + (c - '0');
+            return neg ? -x : x;
+        }
+    }
+}
