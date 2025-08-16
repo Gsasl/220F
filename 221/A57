@@ -1,127 +1,39 @@
 import java.io.*;
 import java.util.*;
 
-public class ThroughJungle {
-    static int N, M, S, D, K, edgeCnt;
-    static int[] head, to, next;
-
+public class MaxDiamonds {
+    static int R, C; static char[][] grid; static boolean[][] vis;
+    static final int[] dr = {-1, 1, 0, 0}, dc = {0, 0, -1, 1};
     public static void main(String[] args) throws IOException {
         FastReader fr = new FastReader();
-        N = fr.nextInt(); M = fr.nextInt();
-        S = fr.nextInt(); D = fr.nextInt(); K = fr.nextInt();
-
-        head = new int[N + 1];
-        Arrays.fill(head, -1);
-        to = new int[M];
-        next = new int[M];
-        edgeCnt = 0;
-
-        for (int i = 0; i < M; i++) {
-            int u = fr.nextInt();
-            int v = fr.nextInt();
-            addEdge(u, v); // directed edge
-        }
-
-        // special all‑same case
-        if (S == D && S == K) {
-            System.out.println(0);
-            System.out.println(S);
-            return;
-        }
-
-        int[] distS = new int[N + 1], parS = new int[N + 1];
-        int[] distK = new int[N + 1], parK = new int[N + 1];
-        bfs(S, distS, parS);
-        bfs(K, distK, parK);
-
-        if (distS[K] == -1 || distK[D] == -1) {
-            System.out.println(-1);
-            return;
-        }
-
-        int totalDist = distS[K] + distK[D];
-
-        // reconstruct S→K
-        List<Integer> path = new ArrayList<>();
-        for (int v = K; v != -1; v = parS[v]) {
-            path.add(v);
-            if (v == S) break;
-        }
-        if (path.get(path.size() - 1) != S) {
-            System.out.println(-1);
-            return;
-        }
-        Collections.reverse(path);
-
-        // reconstruct K→D (skip K to avoid duplication)
-        List<Integer> tail = new ArrayList<>();
-        for (int v = D; v != -1; v = parK[v]) {
-            tail.add(v);
-            if (v == K) break;
-        }
-        if (tail.get(tail.size() - 1) != K) {
-            System.out.println(-1);
-            return;
-        }
-        Collections.reverse(tail);
-        for (int i = 1; i < tail.size(); i++) {
-            path.add(tail.get(i));
-        }
-
-        // output
-        System.out.println(totalDist);
-        StringBuilder sb = new StringBuilder();
-        for (int node : path) sb.append(node).append(' ');
-        System.out.println(sb.toString().trim());
+        R = fr.nextInt(); C = fr.nextInt();
+        grid = new char[R][C]; for (int i = 0; i < R; i++) grid[i] = fr.next().toCharArray();
+        vis = new boolean[R][C];
+        int max = 0;
+        for (int i = 0; i < R; i++)
+            for (int j = 0; j < C; j++)
+                if (!vis[i][j] && grid[i][j] != '#')
+                    max = Math.max(max, bfs(i, j));
+        System.out.println(max);
     }
-
-    static void addEdge(int u, int v) {
-        to[edgeCnt] = v;
-        next[edgeCnt] = head[u];
-        head[u] = edgeCnt++;
-    }
-
-    static void bfs(int src, int[] dist, int[] par) {
-        Arrays.fill(dist, -1);
-        Arrays.fill(par, -1);
-        int[] q = new int[N];
-        int qs = 0, qe = 0;
-        dist[src] = 0;
-        q[qe++] = src;
-
-        while (qs < qe) {
-            int u = q[qs++];
-            for (int e = head[u]; e != -1; e = next[e]) {
-                int v = to[e];
-                if (dist[v] == -1) {
-                    dist[v] = dist[u] + 1;
-                    par[v] = u;
-                    q[qe++] = v;
+    static int bfs(int sr, int sc) {
+        int cnt = 0; ArrayDeque<int[]> q = new ArrayDeque<>();
+        vis[sr][sc] = true; q.add(new int[]{sr, sc});
+        while (!q.isEmpty()) {
+            int[] cur = q.poll(); int r = cur[0], c = cur[1];
+            if (grid[r][c] == 'D') cnt++;
+            for (int k = 0; k < 4; k++) {
+                int nr = r + dr[k], nc = c + dc[k];
+                if (nr>=0 && nr<R && nc>=0 && nc<C && !vis[nr][nc] && grid[nr][nc] != '#') {
+                    vis[nr][nc] = true; q.add(new int[]{nr, nc});
                 }
             }
         }
+        return cnt;
     }
-
-    static class FastReader {
-        private final DataInputStream in = new DataInputStream(System.in);
-        private final byte[] buf = new byte[1 << 16];
-        private int ptr = 0, len = 0;
+    static class FastReader { private final DataInputStream in = new DataInputStream(System.in);
+        private final byte[] buf = new byte[1 << 16]; int ptr = 0, len = 0;
         private int read() throws IOException {
-            if (len == -1) return -1;
-            if (ptr >= len) {
-                ptr = 0;
-                len = in.read(buf);
-                if (len == -1) return -1;
-            }
-            return buf[ptr++] & 0xFF;
-        }
-        int nextInt() throws IOException {
-            int c, x = 0;
-            do { c = read(); } while (c <= ' ' && c != -1);
-            boolean neg = (c == '-');
-            if (neg) c = read();
-            for (; c >= '0' && c <= '9'; c = read()) x = x * 10 + (c - '0');
-            return neg ? -x : x;
-        }
-    }
+            if (ptr >= len) { ptr = 0; len = in.read(buf); if (len == -1) return -1; }
+            return buf[ptr++] & 0xFF; }
 }
