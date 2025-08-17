@@ -1,1 +1,1 @@
-# 220F
+# 220F is a DSA problem solving set at uni.
